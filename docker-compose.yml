@@ -1,0 +1,13 @@
+version: '3'
+services:
+  nuxt:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/home/www/html
+      - /home/www/html/node_modules
+    ports:
+      - 3000:3000
+    command:
+      "npm run dev"
