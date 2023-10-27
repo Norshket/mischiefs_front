@@ -1,46 +1,42 @@
 import {defineStore} from 'pinia'
-import {useApiFetch} from "~/composable/auth.js";
+import {useApiFetch} from "~/composable/useApiFetch";
+
+type User = {
+    id: number,
+    name: string,
+    email: string,
+}
+
+type Credential = {
+    email: string,
+    password: string,
+}
+
+export const useAuthStore = defineStore('auth', () => {
+    const user = ref<User | null>(null)
+    const isLoggedIn = computed(() => !!user.value)
+
+    async function fetchUser() {
+        const {data, error} = await useApiFetch("/api/user")
+        user.value = data.value as User
+        console.log(error)
+    }
 
 
-export const useAuthStore = defineStore('auth', {
+    async function login(credentials: Credential) {
+        await useApiFetch("/sanctum/csrf-cookie")
 
-    state: () => ({
-        id: '',
-        full_name: '',
-        email: '',
-        isLoggedIn: false,
-    }),
+        const login = await useApiFetch("/login", {
+            method: "POST",
+            body: credentials,
+        })
 
-    actions: {
-        async login(credentials) {
-            await useApiFetch("/sanctum/csrf-cookie");
+        await fetchUser();
 
-            await useApiFetch("/login", {
-                method: 'POST',
-                body: credentials,
-            }).then(({data}) => {
-                // this.fetchUser();
-            });
-
-        },
-
-        async fetchUser() {
-            const {data, error} = await useApiFetch("/api/user");
-            this.$state = data.value;
-            this.$state.isLoggedIn = true;
+        return login;
+    }
 
 
-        },
-
-        logout() {
-            useApiFetch("/logout", {method: "POST"})
-                .then(({data}) => {
-                    this.$state.isLoggedIn = false;
-                    console.log(this.$state.isLoggedIn
-                    )
-                });
-        }
-    },
-
+    return {user, login, isLoggedIn, fetchUser};
 
 })

@@ -2,11 +2,9 @@
   <div>
     <p>login</p>
 
-    {{ isLoggedIn }}
-
     <form @submit.prevent="login">
       <div>
-        <input type="password" v-model="form.email">
+        <input v-model="form.email">
       </div>
       <div>
         <input type="password" v-model="form.password">
@@ -18,33 +16,18 @@
   </div>
 </template>
 
-<script>
-import {mapState, mapActions} from 'pinia'
-import {useAuthStore} from "~/stores/useAuthStore.ts";
+<script lang="ts" setup>
 
-definePageMeta({
-  layout: 'auth'
+const auth = useAuthStore()
+
+const form = ref({
+  email: 'test@example.com',
+  password: 'password',
 })
 
-export default {
-  data() {
-    return {
-      form: {
-        email: 'test@example.com',
-        password: 'password',
-      }
-    }
-  },
-
-  computed: {
-    ...mapState(useAuthStore, ['isLoggedIn'])
-  },
-
-  methods: {
-    ...mapActions(useAuthStore, ['login']),
-  }
-
-
+async function login() {
+  const {error} = auth.login(form.value)
+  console.log(error)
 }
 
 
